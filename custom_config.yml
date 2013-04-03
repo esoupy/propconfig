@@ -1,0 +1,18 @@
+## Filename with location - ending with :
+#     indented variable : value pair - separated by ':'
+
+/home/esales/devops/propconfig/examples/properties.txt:
+  HostName : overlord1
+  MaxMem : 1024
+  JreMaxMem : 5120
+  JreMinMem : 5120
+  ExtraJars : /opt/app/build/deploy/dirty.ear/dirty.war/WEB-INF/lib/jtidy-r938.jar:/opt/app/build/deploy/dirty.ear/dirty.war
+  SpacesConf : I accept spaces too
+
+/home/esales/devops/propconfig/examples/Another.conf:
+  Environment : Test
+  CustLimit : 1000
+
+/home/esales/devops/propconfig/examples/local_common.properties:
+  com.company.db.allowReboots : false
+  com.company.fs.pathExample: /hdfs/example/path

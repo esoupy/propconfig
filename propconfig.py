@@ -6,11 +6,11 @@ YAML_CONF = "custom_config.yml"
 
 INFO="""
     propconfig
-        Update Property files from an custom override file.
+        Update Property files from a custom merge file.
 """
 
 USAGE="""
-    propconfig.py [ --file <file> | --validate | --diff | --silent | --help ]
+    propconfig.py [ -file <file> | -validate | -diff | -help ]
 
     Default:
         update property files from '%s'
@@ -26,7 +26,7 @@ USAGE="""
         -h | --help          : this message
 """ % YAML_CONF
 
-# Reworked to work with Python versions <2.5 and without importing yaml
+
 import fileinput
 import sys, os
 
@@ -87,7 +87,7 @@ def loadConfig(yamlFile):
     """
     Load the yaml config file in memory
     """
-    ## we're not really using the yaml module - because RH5 python sucks
+    ## we're not really using the yaml module - because RHEL5 python sucks
     yamlRet = {}
 
     if os.path.isfile(yamlFile):
@@ -121,7 +121,7 @@ def loadConfig(yamlFile):
                             else:
                                 if fdict:
                                     yamlRet[fhead] = fdict
-                                    # reset fhead and fdict
+                                # reset fhead and fdict
                                 fhead = line.split(':')[0].strip()
                                 fdict = {}
                         else:
@@ -131,7 +131,8 @@ def loadConfig(yamlFile):
                             else:
                                 key = str(line.split(':')[0]).strip()
                                 value = str(':'.join(line.split(':')[1:])).strip()
-                                if key and value:
+                                # It's okay if Value is ''
+                                if key:
                                     fdict[key] = value
                                 else:
                                     ErrorMsg("Error: bad 'key: value' pair syntax.")
@@ -149,6 +150,8 @@ def loadConfig(yamlFile):
 def verifyChanges(Configs):
     """Returns a Dict of files and changes to be made"""
     RetDict = {}
+    # Variables to comment out 
+    CommList = []
 
     for f in Configs.keys():
         # Check that the file exists before we process it #
@@ -169,9 +172,17 @@ def verifyChanges(Configs):
                         if lval == pConfigs[lvar]:
                             # Config is already set, remove it from pConfigs
                             del pConfigs[lvar]
+                        elif pConfigs[lvar] == '!!':
+                            CommList.append(lvar)
+                            
+            # remove any left over commented out pConfigs
+            for pCon in pConfigs.keys():
+                if pConfigs[pCon] == '!!' and pCon not in CommList:
+                    del pConfigs[pCon]
 
             if pConfigs:
                 RetDict[f] = pConfigs
+    
     return RetDict
 
 
@@ -179,7 +190,10 @@ def showUpdates(File, Configs):
     """ Display the update configs for File """
     print "file:  %s" % (File)
     for v in Configs.keys():
-        print "    %s => %s" % (v, Configs[v])
+        if Configs[v] == '!!':
+            print "    %s => (Comment Out)" % (v)
+        else:
+            print "    %s => %s" % (v, Configs[v])
 
 def makeUpdates(File, Configs):
     """ Make the config updates to File """
@@ -196,8 +210,11 @@ def makeUpdates(File, Configs):
                 if lvar == v:
                     # We comment out the existing line and use the new setting
                     commLine = "# " + line
-                    sys.stdout.write(commLine)
-                    line = "%s=%s\n" % (v,Configs[v])
+                    if Configs[v] == '!!': 
+                        line = commLine 
+                    else:
+                        sys.stdout.write(commLine)
+                        line = "%s=%s\n" % (v,Configs[v])
                     updateCnt = updateCnt + 1
                     varsToUpdate.remove(v)
         sys.stdout.write(line)
@@ -210,7 +227,9 @@ def makeUpdates(File, Configs):
             for x in varsToUpdate:
                 appvar = x
                 appval = Configs[x]
-                f.write("%s=%s\n" % (appvar,appval))
+                if appval != '!!':
+                    # We don't need to append any commented out variables
+                    f.write("%s=%s\n" % (appvar,appval))
             f.close()
         except IOError:
             ErrorMsg("Error: cannot append to '%s'!" % (File))
@@ -250,5 +269,7 @@ if __name__ == "__main__":
                 makeUpdates(f,ChangesToMake[f])
     else:
         doIprint("All files are already up to date.")
+
+
 
 

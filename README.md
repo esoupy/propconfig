@@ -5,14 +5,14 @@ Keep properties and config files updated by merging results with a YAML style co
 
 Usage:
 
-    propconfig.py [ -file <file> | -validate | -diff | -help ]
+    propconfig.py [ -file <config yaml file> | -validate | -diff | -help ]
 
     Default:
         update property files from 'custom_config.yml'
         and print the number of changes made
 
     Optional settings:
-        -f | --file <file>   : use config from a specific yaml file
+        -f | --file <file>   : read configs from a specific yaml file
         -v | --validate      : checks if custom configs are in place
                          exit code is 0 if configs already set
         -d | --diff          : don't update the configs, just print the differences

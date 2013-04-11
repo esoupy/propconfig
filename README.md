@@ -5,7 +5,7 @@ Keep properties and config files updated by merging results with a YAML style co
 
 Usage:
 
-    propconfig.py [ --file <file> | --validate | --diff | --help ]
+    propconfig.py [ --file <file> | --validate | --diff | --help | --silent ]
 
     Default:
         update property files from 'custom_config.yml'

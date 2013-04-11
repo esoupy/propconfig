@@ -224,6 +224,7 @@ def makeUpdates(File, Configs):
         newVarCnt = len(varsToUpdate)
         try:
             f = open(File, 'a')
+            f.write("\n\n## Added via propconfig ##\n")
             for x in varsToUpdate:
                 appvar = x
                 appval = Configs[x]
